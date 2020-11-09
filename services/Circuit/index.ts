@@ -1,10 +1,5 @@
 import GPIO, {Mode} from "../GPIO";
 
-require('localenv');
-
-const NO_default = process.env.NO_SERVOVALVE;
-const LOW_LEVEL_RELAY_default = process.env.LOW_LEVEL_RELAY;
-
 type Params = {
     pinNumber: number;
     mode: Mode,
@@ -12,8 +7,7 @@ type Params = {
     name?: string,
     NO?: boolean,
     LOW_LEVEL_RELAY?: boolean,
-}
-
+};
 
 export class Circuit {
     private readonly pinNumber: number;
