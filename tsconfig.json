@@ -1,0 +1,13 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "lib": ["ES6"],
+    "allowJs": false,
+    "alwaysStrict": true,
+    "noEmitOnError": true,
+    "pretty": true,
+    "allowUnreachableCode": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true
+  }
+}
