@@ -11,27 +11,25 @@
 
 <div id="app">
 <div class="container pt-2">
-    <h3>Контуры системы отопления</h3>
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Комната</th>
-            <th scope="col">PIN</th>
-            <th scope="col">Статус</th>
-            <th scope="col"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(item, index) in circuits">
-            <th scope="row">{{index}}</th>
-            <td>Детская</td>
-            <td>{{item.pinNumber}}</td>
-            <td>{{item.pin.isOpen === true ? item.pin.changing === true ? 'Открывается' : 'Открыт' : item.pin.changing === true ? 'Закрывается' : 'Закрыт'}}</td>
-            <td><button type="button" class="btn btn-danger btn-sm" v-on:click="item.pin.isOpen === true ? close(item.id) : open(item.id)">{{item.pin.isOpen === true ? 'Закрыть' : 'Открыть'}}</button></td>
-        </tr>
-        </tbody>
-    </table>
+    <h3 class="text-center mb-2">Контуры системы отопления</h3>
+    <p v-show="loading">Подождите минутку</p>
+    <div v-show="!loading">
+        <div class="row justify-content-center font-weight-bold border-bottom">
+            <div class="col-1">#</div>
+            <div class="col-3">Комната</div>
+            <div class="col-1">PIN</div>
+            <div class="col-3">Статус</div>
+            <div class="col-1">Действие</div>
+        </div>
+        <div v-for="(item, index) in circuits" class="row justify-content-center mb-2">
+            <div class="col-1 align-items-center">{{index + 1}}</div>
+            <div class="col-3 align-items-center">{{item.name}}</div>
+            <div class="col-1 align-items-center">{{item.pinNumber}}</div>
+            <div class="col-3 align-items-center">{{item.pin.isOpen === true ? item.pin.changing === true ? 'Открывается' : 'Открыт' : item.pin.changing === true ? 'Закрывается' : 'Закрыт'}}</div>
+            <div class="col-1 align-items-center"><button type="button" class="btn btn-danger btn-sm" v-on:click="item.pin.isOpen === true ? close(item.id) : open(item.id)">{{item.pin.isOpen === true ? 'Закрыть' : 'Открыть'}}</button></div>
+        </div>
+    </div>
+
 </div>
 </div>
 
@@ -43,11 +41,12 @@
         el: '#app',
         data: {
             circuits: [],
+            loading: true,
         },
         created: async function () {
             const data = await axios.get(`/all-circuit`);
             this.circuits = data.data;
-
+            setTimeout(() => {this.loading = false}, 100);
             setInterval(async () => {
                 const data = await axios.get(`/all-circuit`);
                 this.circuits = data.data;

@@ -1,5 +1,6 @@
 import {Request, Response} from "express";
 import DB from './DB';
+import {Mode} from "./services/GPIO";
 
 const GPIO = require('./services/GPIO');
 const {Circuit} = require("./services/Circuit");
@@ -20,7 +21,14 @@ circuits.forEach(circuit => {
             GPIO.release(circuit.pinNumber);
             console.log(`Release ${circuit.pinNumber}is OK`);
         }
-        circuit.pin = new Circuit(circuit.pinNumber, "out", true);
+        circuit.pin = new Circuit({
+            pinNumber: circuit.pinNumber,
+            mode: 'out',
+            isOpen: true,
+            name: circuit.name,
+            NO: circuit.NO,
+            LOW_LEVEL_RELAY: circuit.lowLevel,
+        });
     }
         catch (e) {
             console.log('Error while initialisation Pin #', circuit.pinNumber);
@@ -38,7 +46,7 @@ app.use('/close-circuit', (request: Request, response: Response) => {
     const currentCircuit = circuits.find(item => item.id === Number(id));
     if (currentCircuit) {
         currentCircuit.pin.off();
-        response.send(`<h1>OK, we close</h1>`);
+        response.send(`closed`);
     } else {
         response.send("Sorry, but there is not circuit with this id");
     }
@@ -49,7 +57,7 @@ app.use('/open-circuit', (request: Request, response: Response) => {
     const currentCircuit = circuits.find(item => item.id === Number(id));
     if (currentCircuit) {
         currentCircuit.pin.on();
-        response.send(`<h1>OK, we open</h1>`);
+        response.send(`opened>`);
     } else {
         response.send("Sorry, but there is not circuit with this id");
     }
@@ -61,8 +69,7 @@ app.use('/delete-circuit', (request: Request, response: Response) => {
     if (currentCircuit) {
         currentCircuit.pin.release();
         circuits = [...circuits.filter(item => item.id !== Number(id))];
-
-        response.send(`<h1>OK</h1>`);
+        response.send(`deleted`);
     } else {
         response.send("Sorry, but there is not circuit with this id");
     }
@@ -82,12 +89,15 @@ app.listen(3000, () => {
 process.on('SIGINT', function () {
     circuits.forEach(item => {
         GPIO.release(item.pinNumber);
-    })
+    });
     process.exit(2);
 });
 process.on('uncaughtException', function(e) {
     console.log('Uncaught Exception...');
     console.log(e.stack);
+    circuits.forEach(item => {
+        GPIO.release(item.pinNumber);
+    });
     process.exit(99);
 });
 
