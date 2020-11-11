@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import DB from './DB';
 import {Mode} from "./services/GPIO";
-
+const bodyParser = require('body-parser');
 const GPIO = require('./services/GPIO');
 const {Circuit} = require("./services/Circuit");
 
@@ -10,9 +10,10 @@ const express = require('express');
 const app = express();
 
 let { circuits } = DB;
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.raw());
 
-const getCircuts = () => circuits;
-const getCircut = (id: number) => getCircuts().filter(item => item.id === id)[0].pin;
 
 circuits.forEach(circuit => {
     try {
@@ -41,9 +42,9 @@ app.get("/", function (request: Request, response: Response) {
     response.sendFile(__dirname+'/fe/index.html')
 });
 
-app.use('/close-circuit', (request: Request, response: Response) => {
-    const { id } = request.query;
-    const currentCircuit = circuits.find(item => item.id === Number(id));
+app.post('/close-circuit', (request: Request, response: Response) => {
+    const { body: { circuitId } } = request;
+    const currentCircuit = circuits.find(item => item.id === Number(circuitId));
     if (currentCircuit) {
         currentCircuit.pin.off();
         response.send(`closed`);
@@ -51,19 +52,18 @@ app.use('/close-circuit', (request: Request, response: Response) => {
         response.send("Sorry, but there is not circuit with this id");
     }
 });
-
-app.use('/open-circuit', (request: Request, response: Response) => {
-    const { id } = request.query;
-    const currentCircuit = circuits.find(item => item.id === Number(id));
+app.post('/open-circuit', (request: Request, response: Response) => {
+    const { body: { circuitId } } = request;
+    const currentCircuit = circuits.find(item => item.id === Number(circuitId));
     if (currentCircuit) {
         currentCircuit.pin.on();
-        response.send(`opened>`);
+        response.send(`opened`);
     } else {
         response.send("Sorry, but there is not circuit with this id");
     }
 });
 
-app.use('/delete-circuit', (request: Request, response: Response) => {
+/*app.use('/delete-circuit', (request: Request, response: Response) => {
     const { id } = request.query;
     const currentCircuit = circuits.find(item => item.id === Number(id));
     if (currentCircuit) {
@@ -73,7 +73,7 @@ app.use('/delete-circuit', (request: Request, response: Response) => {
     } else {
         response.send("Sorry, but there is not circuit with this id");
     }
-});
+});*/
 
 app.use('/all-circuit', (request: Request, response: Response) => {
     response.header('Access-Control-Allow-Origin', '*');
